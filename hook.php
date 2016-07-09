@@ -118,6 +118,11 @@ catch (Exception $e) {
 	exit("Internal Error.");
 }
 
+if (is_null($config)) {
+	$log->write_error("Incomplete config file: $config_file.");
+	exit("Internal Error.");
+}
+
 if (! check_validity($config))
 {
 	$log->write_error("Invalid Request:");
