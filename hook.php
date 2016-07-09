@@ -90,7 +90,7 @@ function create_repository_url($config, $payload)
 	if (!isset($config['username']) || !isset($config['password'])) {
 		return $payload['repository']['clone_url'];
 	}
-	return sprintf("https://%s:%s@/github.com/{$payload['repository']['full_name']}.git", $config['username'], $config['password']);
+	return sprintf("https://%s:%s@github.com/{$payload['repository']['full_name']}.git", $config['username'], $config['password']);
 }
 
 // -- main -- //
@@ -149,7 +149,7 @@ $cmd =
 	"git pull " . create_repository_url($config, $payload) . " {$branch_name}:{$branch_name}";
 
 // exec shell after escaping //
-$return_code = shell_exec(escapeshellcmd($cmd));
+passthru($cmd, $return_code);
 if ($return_code != 0) {
 	$log->write_err("shell command execution error\n");
 	exit("Internal Error");
