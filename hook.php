@@ -1,6 +1,6 @@
 <?php
 
-ini_set('display_errors', 0);
+ini_set('display_errorors', 0);
 
 $config_file = 'config.json';
 $log_file = 'webhook.log';
@@ -26,7 +26,7 @@ class Logger
 		$this->logfile->fwrite("[+]");
 		$this->write_with_date($msg);
 	}
-	public function write_err($msg) {
+	public function write_error($msg) {
 		$this->logfile->fwrite("[-]");
 		$this->write_with_date($msg);
 	}
@@ -85,12 +85,15 @@ function get_config_part($config, $body)
 	return $config[$repo][$branch];
 }
 
-function create_repository_url($config, $payload)
+function create_pull_command($config, $payload)
 {
-	if (!isset($config['username']) || !isset($config['password'])) {
-		return $payload['repository']['clone_url'];
+	$branch = base_branch_name($body['ref']);
+	if (!isset($config['ssh_key'])) {
+		return 'git pull ' . $payload['repository']['clone_url'] . " $branch:$branch";
 	}
-	return sprintf("https://%s:%s@github.com/{$payload['repository']['full_name']}.git", $config['username'], $config['password']);
+	return "ssh-add {$config['ssh_key']}; " .
+		"git pull git@github.com:{$payload['repository']['full_name']}.git {$branch}:{$branch}; " .
+		"ssh-add -d {$config['ssh_key']};";
 }
 
 // -- main -- //
@@ -111,13 +114,13 @@ try {
 	$config = json_decode(file_get_contents($config_file), true);
 }
 catch (Exception $e) {
-	$log->write_err("Failed to Load JSON. " . $e->getMessage());
+	$log->write_error("Failed to Load JSON. " . $e->getMessage());
 	exit("Internal Error.");
 }
 
 if (! check_validity($config))
 {
-	$log->write_err("Invalid Request:");
+	$log->write_error("Invalid Request:");
 	$log->write("\tHeader:");
 	foreach (getallheaders() as $k => $v) {
 		$log->write("\t\t$k: $v");
@@ -150,13 +153,13 @@ foreach($config['skip_files'] as $f) {
 $cmd = 
 	"cd {$config['path']};" .
 	"{$skip_files}" . // apply `git update-index --skip-worktree`
-	"git pull " . create_repository_url($config, $payload) . " {$branch_name}:{$branch_name};" .
+	create_pull_command($config, $payload).
 	"{$noskip_files}";
 
 // exec shell after escaping //
 passthru($cmd, $return_code);
 if ($return_code != 0) {
-	$log->write_err("shell command execution error\n");
+	$log->write_error("shell command execution error\n");
 	exit("Internal Error");
 }
 
