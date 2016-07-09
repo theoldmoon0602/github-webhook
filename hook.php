@@ -62,7 +62,7 @@ function check_validity($config) {
 	}
 
 	$body = json_decode(file_get_contents('php://input'), true);
-	$name = $body['repository']['name'];
+	$name = $body['repository']['full_name'];
 
 	// check is repository name registered? //
 	if (! in_array($name, array_keys($config), true)) {
@@ -80,7 +80,7 @@ function check_validity($config) {
 function get_config_part($config, $body)
 {
 	$branch = base_branch_name($body['ref']);
-	$repo = $body['repository']['name'];
+	$repo = $body['repository']['full_name'];
 
 	return $config[$repo][$branch];
 }
