@@ -9,16 +9,24 @@ $log_file = 'webhook.log';
 class logger
 {
 	private $logfile;
-	public __construct($logfile_name) {
+	public function __construct($logfile_name) {
 		$this->logfile = new SplFileObject($logfile_name, "a");
 	}
 
-	public write($msg) {
+	public function write($msg) {
 		$this->logfile->fwrite($msg . "\n");
 	}
-
-	public write_log($msg) {
+	public function write_with_date($msg) {
 		$this->write((new DateTime)->format('[Y-m-d H:i:s]')  . $msg);
+	}
+
+	public function write_log($msg) {
+		$this->logfile->fwrite("[+]");
+		$this->write_with_date($msg);
+	}
+	public function write_err($msg) {
+		$this->logfile->fwrite("[-]");
+		$this->write_with_date($msg);
 	}
 }
 
@@ -85,12 +93,21 @@ if (! file_exists($config_file)) {
 	exit("Internal Error.");
 }
 
-$payload = json_decode(file_get_contents("php://input"), true);
-$config = json_decode(file_get_contents($config_file), true);
+$payload = null;
+$config = null;
+
+try {
+	$payload = json_decode(file_get_contents("php://input"), true);
+	$config = json_decode(file_get_contents($config_file), true);
+}
+catch (Exception $e) {
+	$log->write_err("Failed to Load JSON. " . $e->getMessage());
+	exit("Internal Error.");
+}
 
 if (! check_validity($config))
 {
-	$log->write_log("Invalid Request:");
+	$log->write_err("Invalid Request:");
 	$log->write("\tHeader:");
 	foreach (getallheaders() as $k => $v) {
 		$log->write("\t\t$k: $v");
@@ -123,7 +140,10 @@ $cmd =
 // exec shell after escaping //
 $return_code = shell_exec(escapeshellcmd($cmd));
 if ($return_code != 0) {
-	$log->write_log("shell command execution error\n");
+	$log->write_err("shell command execution error\n");
 	exit("Internal Error");
 }
+
+$branch = base_branch_name($payload['ref']);
+$log->write_log("Accepted Webhook, {$payload['repository']['name']}:{$branch}");
 
