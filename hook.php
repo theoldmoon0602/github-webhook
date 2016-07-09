@@ -163,7 +163,7 @@ $cmd =
 	"{$noskip_files}";
 
 // exec shell after escaping //
-passthru($cmd, $return_code);
+exec($cmd, $out, $return_code);
 if ($return_code != 0) {
 	$log->write_error("shell command execution error\n");
 	exit("Internal Error");
