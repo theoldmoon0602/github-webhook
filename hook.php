@@ -145,5 +145,5 @@ if ($return_code != 0) {
 }
 
 $branch = base_branch_name($payload['ref']);
-$log->write_log("Accepted Webhook, {$payload['repository']['name']}:{$branch}");
+$log->write_log("Accepted Webhook, {$payload['repository']['name']}:{$branch} {$bayload['after']}");
 
