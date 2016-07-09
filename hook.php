@@ -150,7 +150,7 @@ foreach($config['skip_files'] as $f) {
 $cmd = 
 	"cd {$config['path']};" .
 	"{$skip_files}" . // apply `git update-index --skip-worktree`
-	"git pull " . create_repository_url($config, $payload) . " {$branch_name}:{$branch_name}" .
+	"git pull " . create_repository_url($config, $payload) . " {$branch_name}:{$branch_name};" .
 	"{$noskip_files}";
 
 // exec shell after escaping //
