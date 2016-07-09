@@ -91,7 +91,8 @@ function create_pull_command($config, $payload)
 	if (!isset($config['ssh_key'])) {
 		return 'git pull ' . $payload['repository']['clone_url'] . " $branch:$branch";
 	}
-	return "ssh-add {$config['ssh_key']}; " .
+	return "eval `ssh-agent`;" .
+		"ssh-add {$config['ssh_key']}; " .
 		"git pull git@github.com:{$payload['repository']['full_name']}.git {$branch}:{$branch}; " .
 		"ssh-add -d {$config['ssh_key']};";
 }
