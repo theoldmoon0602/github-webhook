@@ -85,6 +85,14 @@ function get_config_part($config, $body)
 	return $config[$repo][$branch];
 }
 
+function create_repository_url($config, $payload)
+{
+	if (!isset($config['username']) || !isset($config['password'])) {
+		return $payload['repository']['clone_url'];
+	}
+	return sprintf("https://%s:%s@/github.com/{$payload['repository']['full_name']}.git", $config['username'], $config['password']);
+}
+
 // -- main -- //
 
 
@@ -138,7 +146,7 @@ foreach($config['skip_files'] as $f) {
 $cmd = 
 	"cd {$config['path']};" .
 	"{$skip_files};" . // apply `git update-index --skip-worktree`
-	"git pull origin {$branch_name}:{$branch_name}";
+	"git pull " . create_repository_url($config, $payload) . " {$branch_name}:{$branch_name}";
 
 // exec shell after escaping //
 $return_code = shell_exec(escapeshellcmd($cmd));
