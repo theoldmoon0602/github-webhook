@@ -6,7 +6,7 @@ $log_file = 'webhook.log';
 /**
  * Minimal Logging Class
  */
-class logger
+class Logger
 {
 	private $logfile;
 	public function __construct($logfile_name) {
@@ -86,7 +86,7 @@ function get_config_part($config, $body)
 // -- main -- //
 
 
-$log = new Logging($log_file);
+$log = new Logger($log_file);
 
 if (! file_exists($config_file)) {
 	$log->write_log("There is no exist $config_file.");
