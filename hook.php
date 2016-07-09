@@ -1,17 +1,31 @@
 <?php
 
 $config_file = 'config.json';
+$log_file = 'webhook.log';
+
+/**
+ * Minimal Logging Class
+ */
+class logger
+{
+	private $logfile;
+	public __construct($logfile_name) {
+		$this->logfile = new SplFileObject($logfile_name, "a");
+	}
+
+	public write($msg) {
+		$this->logfile->fwrite($msg . "\n");
+	}
+
+	public write_log($msg) {
+		$this->write((new DateTime)->format('[Y-m-d H:i:s]')  . $msg);
+	}
+}
 
 // -- Utility functions -- //
 function base_branch_name($s)
 {
 	return substr($s, strlen('/refs/heads/') - 1);
-}
-
-function write_log($msg)
-{
-	$log_file = './webhook.log';
-	return error_log($msg, 3, $log_file);
 }
 
 function startswidth($heystack, $needle)
@@ -63,22 +77,30 @@ function get_config_part($config, $body)
 
 // -- main -- //
 
+
+$log = new Logging($log_file);
+
+if (! file_exists($config_file)) {
+	$log->write_log("There is no exist $config_file.");
+	exit("Internal Error.");
+}
+
 $payload = json_decode(file_get_contents("php://input"), true);
 $config = json_decode(file_get_contents($config_file), true);
 
 if (! check_validity($config))
 {
-	write_log("Invalid Request:");
-	write_log("\tHeader:");
+	$log->write_log("Invalid Request:");
+	$log->write("\tHeader:");
 	foreach (getallheaders() as $k => $v) {
-		write_log("\t\t$k: $v");
+		$log->write("\t\t$k: $v");
 	}
 
-	write_log("\tBody:");
+	$log->write("\tBody:");
 	foreach (explode("\n", var_export($payload, true)) as $l) {
-		write_log("\t\t$l");
+		$log->write("\t\t$l");
 	}
-	write_log("");
+	$log->write("");
 
 	exit("Invalid Request");
 }
@@ -101,7 +123,7 @@ $cmd =
 // exec shell after escaping //
 $return_code = shell_exec(escapeshellcmd($cmd));
 if ($return_code != 0) {
-	write_log("shell command execution error\n");
+	$log->write_log("shell command execution error\n");
 	exit("Internal Error");
 }
 
