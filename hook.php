@@ -163,5 +163,5 @@ if ($return_code != 0) {
 	exit("Internal Error");
 }
 
-$log->write_log("Accepted Webhook, {$payload['repository']['name']}:{$branch_name} {$bayload['after']}");
+$log->write_log("Accepted Webhook, {$payload['repository']['full_name']}:{$branch_name} {$bayload['after']}");
 
