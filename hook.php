@@ -36,7 +36,7 @@ function base_branch_name($s)
 	return substr($s, strlen('/refs/heads/') - 1);
 }
 
-function startswidth($heystack, $needle)
+function startswith($heystack, $needle)
 {
 	return (substr($heystack, 0, strlen($needle)) === $needle);
 }
