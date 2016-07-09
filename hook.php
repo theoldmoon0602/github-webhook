@@ -139,13 +139,13 @@ $branch_name = base_branch_name($payload['ref']);
 // create command to register skip-worktree files //
 $skip_files = "";
 foreach($config['skip_files'] as $f) {
-	$skip_files .= "git update-index --skip-worktree " . $f;
+	$skip_files .= "git update-index --skip-worktree " . $f . ";";
 }
 
 // create git pull command //
 $cmd = 
 	"cd {$config['path']};" .
-	"{$skip_files};" . // apply `git update-index --skip-worktree`
+	"{$skip_files}" . // apply `git update-index --skip-worktree`
 	"git pull " . create_repository_url($config, $payload) . " {$branch_name}:{$branch_name}";
 
 // exec shell after escaping //
